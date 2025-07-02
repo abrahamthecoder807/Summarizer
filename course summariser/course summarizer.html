@@ -1,0 +1,1152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Course Summarizer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            animation: fadeInDown 0.8s ease-out;
+        }
+        
+        .header h1 {
+            color: white;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .header p {
+            color: rgba(255,255,255,0.9);
+            font-size: 1.1rem;
+        }
+        
+        .card {
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            animation: fadeInUp 0.8s ease-out;
+        }
+        
+        .input-group {
+            margin-bottom: 25px;
+        }
+        
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+        }
+        
+        .input-group textarea {
+            width: 100%;
+            min-height: 200px;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 16px;
+            resize: vertical;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+        
+        .input-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+        
+        .btn-secondary {
+            background: #f8f9fa;
+            color: #666;
+            border: 2px solid #e0e0e0;
+        }
+        
+        .btn-secondary:hover {
+            background: #e9ecef;
+            border-color: #ced4da;
+        }
+        
+        .select-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        select {
+            padding: 10px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            background: white;
+            cursor: pointer;
+        }
+        
+        .summary-output {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 25px;
+            margin-top: 20px;
+            border-left: 5px solid #667eea;
+            animation: slideIn 0.5s ease-out;
+        }
+        
+        .summary-output h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.4rem;
+        }
+        
+        .main-ideas {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .chapter-section {
+            background: white;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            border-left: 5px solid #667eea;
+        }
+        
+        .chapter-header {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 20px 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .chapter-header:hover {
+            background: linear-gradient(135deg, #5a6fd8, #6a42a0);
+        }
+        
+        .chapter-header h3 {
+            margin: 0;
+            font-size: 1.3rem;
+        }
+        
+        .chapter-toggle {
+            font-size: 1.2rem;
+            transition: transform 0.3s ease;
+        }
+        
+        .chapter-toggle.expanded {
+            transform: rotate(180deg);
+        }
+        
+        .chapter-content {
+            padding: 25px;
+            display: none;
+        }
+        
+        .chapter-content.expanded {
+            display: block;
+            animation: slideDown 0.3s ease-out;
+        }
+        
+        .module-section {
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            padding: 20px;
+            border-left: 4px solid #28a745;
+        }
+        
+        .module-title {
+            color: #28a745;
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .topic-item {
+            background: white;
+            margin-bottom: 12px;
+            padding: 15px;
+            border-radius: 6px;
+            border-left: 3px solid #ffc107;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        
+        .topic-title {
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 8px;
+        }
+        
+        .topic-summary {
+            color: #6c757d;
+            line-height: 1.5;
+        }
+        
+        .structure-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+            padding: 20px;
+            background: rgba(102, 126, 234, 0.1);
+            border-radius: 10px;
+        }
+        
+        .stat-item {
+            text-align: center;
+            padding: 10px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        
+        .stat-number {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            color: #666;
+            margin-top: 5px;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+        }
+        
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(102, 126, 234, 0.1);
+            border-radius: 8px;
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .file-upload {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+        }
+        
+        .file-upload input[type=file] {
+            position: absolute;
+            left: -9999px;
+        }
+        
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(100px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        @keyframes slideOutRight {
+            from {
+                opacity: 1;
+                transform: translateX(0);
+            }
+            to {
+                opacity: 0;
+                transform: translateX(100px);
+            }
+        }
+        
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                max-height: 0;
+            }
+            to {
+                opacity: 1;
+                max-height: 500px;
+            }
+        }
+        
+        .main-ideas li {
+            background: white;
+            margin-bottom: 12px;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            animation: fadeIn 0.3s ease-out;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .card {
+                padding: 20px;
+            }
+            
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .btn {
+                justify-content: center;
+            }
+            
+            .stats {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>📚 Course Summarizer</h1>
+            <p>Transform your course materials into key insights</p>
+        </header>
+        
+        <div class="card">
+            <div class="input-group">
+                <label for="courseText">Paste your course material here:</label>
+                <textarea 
+                    id="courseText" 
+                    placeholder="Copy and paste your lecture notes, textbook chapters, or any course material here..."
+                ></textarea>
+            </div>
+            
+            <div class="controls">
+                <div class="file-upload">
+                    <button class="btn btn-secondary">
+                        📄 Upload File
+                    </button>
+                    <input type="file" id="fileInput" accept=".txt,.md,.pdf" />
+                </div>
+                
+                <div class="select-group">
+                    <label for="summaryType">Summary Style:</label>
+                    <select id="summaryType">
+                        <option value="structured">📚 Chapters & Modules</option>
+                        <option value="bullet">📝 Bullet Points</option>
+                        <option value="paragraph">📖 Paragraphs</option>
+                        <option value="concept">🎯 Key Concepts</option>
+                    </select>
+                </div>
+                
+                <div class="select-group">
+                    <label for="detailLevel">Detail Level:</label>
+                    <select id="detailLevel">
+                        <option value="brief">Brief</option>
+                        <option value="moderate">Moderate</option>
+                        <option value="detailed">Detailed</option>
+                    </select>
+                </div>
+                
+                <button class="btn btn-primary" id="summarizeBtn">
+                    ✨ Generate Summary
+                </button>
+                
+                <button class="btn btn-secondary" id="clearBtn">
+                    🗑️ Clear All
+                </button>
+            </div>
+            
+            <div id="output"></div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script>
+        // Configure PDF.js
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        class CourseSummarizer {
+            constructor() {
+                this.initializeElements();
+                this.bindEvents();
+                this.summaries = [];
+            }
+            
+            initializeElements() {
+                this.courseText = document.getElementById('courseText');
+                this.fileInput = document.getElementById('fileInput');
+                this.summaryType = document.getElementById('summaryType');
+                this.detailLevel = document.getElementById('detailLevel');
+                this.summarizeBtn = document.getElementById('summarizeBtn');
+                this.clearBtn = document.getElementById('clearBtn');
+                this.output = document.getElementById('output');
+            }
+            
+            bindEvents() {
+                this.summarizeBtn.addEventListener('click', () => this.generateSummary());
+                this.clearBtn.addEventListener('click', () => this.clearAll());
+                this.fileInput.addEventListener('change', (e) => this.handleFileUpload(e));
+                
+                // Make file upload button functional
+                document.querySelector('.file-upload .btn').addEventListener('click', () => {
+                    this.fileInput.click();
+                });
+            }
+            
+            handleFileUpload(event) {
+                const file = event.target.files[0];
+                if (!file) return;
+                
+                if (file.type === 'application/pdf') {
+                    this.handlePDFUpload(file);
+                } else if (file.type === 'text/plain' || file.name.endsWith('.md')) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        this.courseText.value = e.target.result;
+                    };
+                    reader.readAsText(file);
+                } else {
+                    alert('Please upload a PDF, TXT, or MD file.');
+                }
+            }
+            
+            async handlePDFUpload(file) {
+                try {
+                    this.showFileProcessing();
+                    const arrayBuffer = await file.arrayBuffer();
+                    const pdf = await pdfjsLib.getDocument({data: arrayBuffer}).promise;
+                    let fullText = '';
+                    
+                    for (let i = 1; i <= pdf.numPages; i++) {
+                        const page = await pdf.getPage(i);
+                        const textContent = await page.getTextContent();
+                        const pageText = textContent.items.map(item => item.str).join(' ');
+                        fullText += pageText + '\n\n';
+                    }
+                    
+                    this.courseText.value = fullText.trim();
+                    this.hideFileProcessing();
+                    
+                    // Show success message
+                    this.showNotification(`PDF processed successfully! Extracted text from ${pdf.numPages} pages.`, 'success');
+                    
+                } catch (error) {
+                    console.error('Error processing PDF:', error);
+                    this.hideFileProcessing();
+                    this.showNotification('Error processing PDF. Please try a different file.', 'error');
+                }
+            }
+            
+            showFileProcessing() {
+                const processingHTML = `
+                    <div id="fileProcessing" style="
+                        position: fixed;
+                        top: 50%;
+                        left: 50%;
+                        transform: translate(-50%, -50%);
+                        background: white;
+                        padding: 30px;
+                        border-radius: 15px;
+                        box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+                        z-index: 1000;
+                        text-align: center;
+                    ">
+                        <div class="spinner" style="margin: 0 auto 15px;"></div>
+                        <p style="margin: 0; font-weight: 600;">Processing PDF...</p>
+                        <p style="margin: 5px 0 0 0; font-size: 14px; color: #666;">This may take a moment</p>
+                    </div>
+                    <div id="overlay" style="
+                        position: fixed;
+                        top: 0;
+                        left: 0;
+                        width: 100%;
+                        height: 100%;
+                        background: rgba(0,0,0,0.5);
+                        z-index: 999;
+                    "></div>
+                `;
+                document.body.insertAdjacentHTML('beforeend', processingHTML);
+            }
+            
+            hideFileProcessing() {
+                const processing = document.getElementById('fileProcessing');
+                const overlay = document.getElementById('overlay');
+                if (processing) processing.remove();
+                if (overlay) overlay.remove();
+            }
+            
+            showNotification(message, type = 'info') {
+                const notification = document.createElement('div');
+                notification.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    background: ${type === 'success' ? '#4CAF50' : type === 'error' ? '#f44336' : '#2196F3'};
+                    color: white;
+                    padding: 15px 20px;
+                    border-radius: 8px;
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+                    z-index: 1001;
+                    font-weight: 500;
+                    animation: slideInRight 0.3s ease-out;
+                `;
+                notification.textContent = message;
+                document.body.appendChild(notification);
+                
+                setTimeout(() => {
+                    notification.style.animation = 'slideOutRight 0.3s ease-out';
+                    setTimeout(() => notification.remove(), 300);
+                }, 3000);
+            }
+            
+            generateSummary() {
+                const text = this.courseText.value.trim();
+                if (!text) {
+                    alert('Please enter some course material to summarize!');
+                    return;
+                }
+                
+                this.showLoading();
+                
+                // Simulate processing time for better UX
+                setTimeout(() => {
+                    const summary = this.processCourseText(text);
+                    this.displaySummary(summary, text);
+                }, 1500);
+            }
+            
+            processCourseText(text) {
+                const sentences = this.splitIntoSentences(text);
+                const words = text.split(/\s+/).filter(word => word.length > 0);
+                const paragraphs = text.split(/\n\s*\n/).filter(p => p.trim().length > 0);
+                
+                // Extract key concepts and main ideas
+                const keyTerms = this.extractKeyTerms(text);
+                const mainIdeas = this.extractMainIdeas(sentences, keyTerms);
+                const concepts = this.identifyConcepts(text, keyTerms);
+                
+                // Extract structured content
+                const structure = this.extractStructure(text);
+                
+                return {
+                    mainIdeas,
+                    concepts,
+                    keyTerms: keyTerms.slice(0, 10),
+                    wordCount: words.length,
+                    sentenceCount: sentences.length,
+                    paragraphCount: paragraphs.length,
+                    structure
+                };
+            }
+            
+            extractStructure(text) {
+                const lines = text.split('\n').filter(line => line.trim().length > 0);
+                const structure = {
+                    chapters: [],
+                    modules: [],
+                    topics: []
+                };
+                
+                let currentChapter = null;
+                let currentModule = null;
+                let currentSection = [];
+                
+                // Patterns for detecting structure
+                const chapterPatterns = [
+                    /^(chapter|chap\.?)\s*(\d+|[ivx]+):?\s*(.+)/i,
+                    /^(\d+\.)\s*(.+)/,
+                    /^(unit|part)\s*(\d+|[ivx]+):?\s*(.+)/i,
+                    /^#{1,2}\s*(.+)/  // Markdown headers
+                ];
+                
+                const modulePatterns = [
+                    /^(module|section|lesson)\s*(\d+|[a-z]):?\s*(.+)/i,
+                    /^(\d+\.\d+)\s*(.+)/,
+                    /^#{3,4}\s*(.+)/,  // Markdown subheaders
+                    /^([A-Z][A-Z\s]{2,}):?\s*(.+)/  // ALL CAPS titles
+                ];
+                
+                const topicPatterns = [
+                    /^•\s*(.+)/,  // Bullet points
+                    /^-\s*(.+)/,  // Dashes
+                    /^\*\s*(.+)/, // Asterisks
+                    /^(\d+\.\d+\.\d+)\s*(.+)/,  // Numbered subsections
+                    /^#{5,6}\s*(.+)/  // Deep markdown headers
+                ];
+                
+                for (let i = 0; i < lines.length; i++) {
+                    const line = lines[i].trim();
+                    let matched = false;
+                    
+                    // Check for chapters
+                    for (const pattern of chapterPatterns) {
+                        const match = line.match(pattern);
+                        if (match) {
+                            // Save current section
+                            if (currentSection.length > 0) {
+                                this.addToCurrentContainer(structure, currentChapter, currentModule, currentSection);
+                                currentSection = [];
+                            }
+                            
+                            const title = match[3] || match[2] || match[1];
+                            currentChapter = {
+                                title: title.trim(),
+                                content: [],
+                                modules: []
+                            };
+                            structure.chapters.push(currentChapter);
+                            currentModule = null;
+                            matched = true;
+                            break;
+                        }
+                    }
+                    
+                    if (!matched) {
+                        // Check for modules
+                        for (const pattern of modulePatterns) {
+                            const match = line.match(pattern);
+                            if (match) {
+                                // Save current section
+                                if (currentSection.length > 0) {
+                                    this.addToCurrentContainer(structure, currentChapter, currentModule, currentSection);
+                                    currentSection = [];
+                                }
+                                
+                                const title = match[3] || match[2] || match[1];
+                                currentModule = {
+                                    title: title.trim(),
+                                    content: [],
+                                    topics: []
+                                };
+                                
+                                if (currentChapter) {
+                                    currentChapter.modules.push(currentModule);
+                                } else {
+                                    structure.modules.push(currentModule);
+                                }
+                                matched = true;
+                                break;
+                            }
+                        }
+                    }
+                    
+                    if (!matched) {
+                        // Check for topics
+                        for (const pattern of topicPatterns) {
+                            const match = line.match(pattern);
+                            if (match) {
+                                const title = match[2] || match[1];
+                                const topic = {
+                                    title: title.trim(),
+                                    content: this.extractTopicContent(lines, i)
+                                };
+                                
+                                if (currentModule) {
+                                    currentModule.topics.push(topic);
+                                } else {
+                                    structure.topics.push(topic);
+                                }
+                                matched = true;
+                                break;
+                            }
+                        }
+                    }
+                    
+                    // If no pattern matched, add to current section
+                    if (!matched && line.length > 10) {
+                        currentSection.push(line);
+                    }
+                }
+                
+                // Add remaining content
+                if (currentSection.length > 0) {
+                    this.addToCurrentContainer(structure, currentChapter, currentModule, currentSection);
+                }
+                
+                return structure;
+            }
+            
+            addToCurrentContainer(structure, currentChapter, currentModule, content) {
+                const summary = this.summarizeContent(content.join(' '));
+                
+                if (currentModule) {
+                    currentModule.content.push(summary);
+                } else if (currentChapter) {
+                    currentChapter.content.push(summary);
+                } else {
+                    // Create a general section
+                    structure.topics.push({
+                        title: 'General Content',
+                        content: summary
+                    });
+                }
+            }
+            
+            extractTopicContent(lines, startIndex) {
+                const content = [];
+                for (let i = startIndex + 1; i < lines.length && i < startIndex + 5; i++) {
+                    const line = lines[i].trim();
+                    if (line && !this.isStructuralElement(line)) {
+                        content.push(line);
+                    } else {
+                        break;
+                    }
+                }
+                return this.summarizeContent(content.join(' '));
+            }
+            
+            isStructuralElement(line) {
+                const structuralPatterns = [
+                    /^(chapter|module|section|unit|part|lesson)/i,
+                    /^#{1,6}\s/,
+                    /^(\d+\.|\d+\.\d+)/,
+                    /^[•\-\*]\s/
+                ];
+                
+                return structuralPatterns.some(pattern => pattern.test(line));
+            }
+            
+            summarizeContent(text) {
+                if (!text || text.length < 50) return text;
+                
+                const sentences = this.splitIntoSentences(text);
+                const keyTerms = this.extractKeyTerms(text);
+                
+                // Find most relevant sentences
+                const scoredSentences = sentences.map(sentence => {
+                    const score = keyTerms.reduce((acc, term) => {
+                        return acc + (sentence.toLowerCase().includes(term) ? 1 : 0);
+                    }, 0);
+                    return { sentence: sentence.trim(), score };
+                });
+                
+                return scoredSentences
+                    .sort((a, b) => b.score - a.score)
+                    .slice(0, 2)
+                    .map(item => item.sentence)
+                    .join(' ');
+            }
+            
+            splitIntoSentences(text) {
+                return text.match(/[^\.!?]+[\.!?]+/g) || [];
+            }
+            
+            extractKeyTerms(text) {
+                const words = text.toLowerCase()
+                    .replace(/[^\w\s]/g, ' ')
+                    .split(/\s+/)
+                    .filter(word => word.length > 3);
+                
+                const stopWords = new Set([
+                    'this', 'that', 'with', 'have', 'will', 'from', 'they', 'know',
+                    'want', 'been', 'good', 'much', 'some', 'time', 'very', 'when',
+                    'come', 'here', 'just', 'like', 'long', 'make', 'many', 'over',
+                    'such', 'take', 'than', 'them', 'well', 'were', 'what', 'your',
+                    'also', 'back', 'could', 'first', 'into', 'most', 'only', 'other',
+                    'should', 'through', 'where', 'which', 'would', 'about', 'after',
+                    'because', 'before', 'between'
+                ]);
+                
+                const wordFreq = {};
+                words.forEach(word => {
+                    if (!stopWords.has(word)) {
+                        wordFreq[word] = (wordFreq[word] || 0) + 1;
+                    }
+                });
+                
+                return Object.entries(wordFreq)
+                    .sort(([,a], [,b]) => b - a)
+                    .slice(0, 20)
+                    .map(([word]) => word);
+            }
+            
+            extractMainIdeas(sentences, keyTerms) {
+                const detailLevel = this.detailLevel.value;
+                const maxIdeas = detailLevel === 'brief' ? 5 : detailLevel === 'moderate' ? 8 : 12;
+                
+                const scoredSentences = sentences.map(sentence => {
+                    const score = keyTerms.reduce((acc, term) => {
+                        return acc + (sentence.toLowerCase().includes(term) ? 1 : 0);
+                    }, 0);
+                    
+                    return { sentence: sentence.trim(), score };
+                });
+                
+                return scoredSentences
+                    .sort((a, b) => b.score - a.score)
+                    .slice(0, maxIdeas)
+                    .map(item => item.sentence)
+                    .filter(sentence => sentence.length > 20);
+            }
+            
+            identifyConcepts(text, keyTerms) {
+                const concepts = [];
+                const lines = text.split('\n').filter(line => line.trim().length > 0);
+                
+                // Look for definition patterns
+                lines.forEach(line => {
+                    const definitionPatterns = [
+                        /(.+?)\s+is\s+(.+)/i,
+                        /(.+?)\s+refers to\s+(.+)/i,
+                        /(.+?)\s+means\s+(.+)/i,
+                        /(.+?):\s+(.+)/
+                    ];
+                    
+                    definitionPatterns.forEach(pattern => {
+                        const match = line.match(pattern);
+                        if (match && match[1].length < 50) {
+                            concepts.push({
+                                term: match[1].trim(),
+                                definition: match[2].trim()
+                            });
+                        }
+                    });
+                });
+                
+                // Add key terms as concepts
+                keyTerms.slice(0, 5).forEach(term => {
+                    if (!concepts.find(c => c.term.toLowerCase().includes(term))) {
+                        concepts.push({
+                            term: term.charAt(0).toUpperCase() + term.slice(1),
+                            definition: `Key concept identified in the material`
+                        });
+                    }
+                });
+                
+                return concepts.slice(0, 8);
+            }
+            
+            showLoading() {
+                this.output.innerHTML = `
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        <p>Analyzing your course material...</p>
+                    </div>
+                `;
+            }
+            
+            displaySummary(summary, originalText) {
+                const summaryType = this.summaryType.value;
+                let mainContent = '';
+                
+                if (summaryType === 'structured') {
+                    mainContent = this.createStructuredSummary(summary.structure);
+                } else if (summaryType === 'bullet') {
+                    mainContent = `
+                        <h3>📝 Main Ideas</h3>
+                        <ul class="main-ideas">
+                            ${summary.mainIdeas.map(idea => `<li>${idea}</li>`).join('')}
+                        </ul>
+                    `;
+                } else if (summaryType === 'concept') {
+                    mainContent = `
+                        <h3>🎯 Key Concepts</h3>
+                        <ul class="main-ideas">
+                            ${summary.concepts.map(concept => 
+                                `<li><strong>${concept.term}:</strong> ${concept.definition}</li>`
+                            ).join('')}
+                        </ul>
+                    `;
+                } else {
+                    const paragraphSummary = this.createParagraphSummary(summary.mainIdeas);
+                    mainContent = `
+                        <h3>📖 Summary</h3>
+                        <div style="background: white; padding: 20px; border-radius: 8px; line-height: 1.6;">
+                            ${paragraphSummary}
+                        </div>
+                    `;
+                }
+                
+                this.output.innerHTML = `
+                    <div class="summary-output">
+                        ${mainContent}
+                        
+                        <div style="margin-top: 25px;">
+                            <h3>🔑 Key Terms</h3>
+                            <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px;">
+                                ${summary.keyTerms.map(term => 
+                                    `<span style="background: #667eea; color: white; padding: 5px 12px; border-radius: 15px; font-size: 12px;">${term}</span>`
+                                ).join('')}
+                            </div>
+                        </div>
+                        
+                        ${summaryType === 'structured' ? this.createStructureStats(summary.structure) : ''}
+                        
+                        <div class="stats">
+                            <span>📄 ${summary.wordCount} words</span>
+                            <span>📝 ${summary.sentenceCount} sentences</span>
+                            <span>📋 ${summary.paragraphCount} paragraphs</span>
+                            <span>💡 ${summary.mainIdeas.length} key ideas</span>
+                        </div>
+                    </div>
+                `;
+                
+                // Add click handlers for collapsible chapters
+                if (summaryType === 'structured') {
+                    this.addChapterToggleHandlers();
+                }
+                
+                // Store summary for potential export
+                this.summaries.push({
+                    timestamp: new Date(),
+                    summary,
+                    originalLength: originalText.length
+                });
+            }
+            
+            createStructuredSummary(structure) {
+                let html = '<h3>📚 Course Structure</h3>';
+                
+                // Chapters
+                if (structure.chapters.length > 0) {
+                    structure.chapters.forEach((chapter, index) => {
+                        html += `
+                            <div class="chapter-section">
+                                <div class="chapter-header" data-chapter="${index}">
+                                    <h3>📖 ${chapter.title}</h3>
+                                    <span class="chapter-toggle">▼</span>
+                                </div>
+                                <div class="chapter-content" id="chapter-${index}">
+                                    ${chapter.content.map(content => `<p>${content}</p>`).join('')}
+                                    ${chapter.modules.map(module => `
+                                        <div class="module-section">
+                                            <div class="module-title">
+                                                📋 ${module.title}
+                                            </div>
+                                            ${module.content.map(content => `<p>${content}</p>`).join('')}
+                                            ${module.topics.map(topic => `
+                                                <div class="topic-item">
+                                                    <div class="topic-title">💡 ${topic.title}</div>
+                                                    <div class="topic-summary">${topic.content}</div>
+                                                </div>
+                                            `).join('')}
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        `;
+                    });
+                }
+                
+                // Standalone Modules
+                if (structure.modules.length > 0) {
+                    structure.modules.forEach(module => {
+                        html += `
+                            <div class="module-section">
+                                <div class="module-title">
+                                    📋 ${module.title}
+                                </div>
+                                ${module.content.map(content => `<p>${content}</p>`).join('')}
+                                ${module.topics.map(topic => `
+                                    <div class="topic-item">
+                                        <div class="topic-title">💡 ${topic.title}</div>
+                                        <div class="topic-summary">${topic.content}</div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        `;
+                    });
+                }
+                
+                // Standalone Topics
+                if (structure.topics.length > 0) {
+                    structure.topics.forEach(topic => {
+                        html += `
+                            <div class="topic-item">
+                                <div class="topic-title">💡 ${topic.title}</div>
+                                <div class="topic-summary">${topic.content}</div>
+                            </div>
+                        `;
+                    });
+                }
+                
+                return html;
+            }
+            
+            createStructureStats(structure) {
+                return `
+                    <div class="structure-stats">
+                        <div class="stat-item">
+                            <div class="stat-number">${structure.chapters.length}</div>
+                            <div class="stat-label">Chapters</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">${structure.modules.length + structure.chapters.reduce((acc, ch) => acc + ch.modules.length, 0)}</div>
+                            <div class="stat-label">Modules</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">${structure.topics.length + structure.modules.reduce((acc, mod) => acc + mod.topics.length, 0) + structure.chapters.reduce((acc, ch) => acc + ch.modules.reduce((acc2, mod) => acc2 + mod.topics.length, 0), 0)}</div>
+                            <div class="stat-label">Topics</div>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            addChapterToggleHandlers() {
+                document.querySelectorAll('.chapter-header').forEach(header => {
+                    header.addEventListener('click', () => {
+                        const chapterIndex = header.dataset.chapter;
+                        const content = document.getElementById(`chapter-${chapterIndex}`);
+                        const toggle = header.querySelector('.chapter-toggle');
+                        
+                        if (content.classList.contains('expanded')) {
+                            content.classList.remove('expanded');
+                            toggle.classList.remove('expanded');
+                        } else {
+                            content.classList.add('expanded');
+                            toggle.classList.add('expanded');
+                        }
+                    });
+                });
+            }
+            
+            createParagraphSummary(mainIdeas) {
+                const grouped = [];
+                for (let i = 0; i < mainIdeas.length; i += 2) {
+                    const group = mainIdeas.slice(i, i + 2);
+                    grouped.push(group.join(' '));
+                }
+                
+                return grouped.map(paragraph => `<p style="margin-bottom: 15px;">${paragraph}</p>`).join('');
+            }
+            
+            clearAll() {
+                this.courseText.value = '';
+                this.output.innerHTML = '';
+                this.fileInput.value = '';
+            }
+        }
+        
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', () => {
+            new CourseSummarizer();
+        });
+    </script>
+</body>
+</html>
